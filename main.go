@@ -1,20 +1,31 @@
 package main
 
-import (
-	"io"
-	"log"
-	"net/http"
-	"os"
-)
+var Customers []Customer
+var Agents []SalesAgent
 
+var loggedinAgent string
 func main() {
-	port := os.Getenv("PORT")
 
-	http.HandleFunc("/", hello)
-	log.Print("listening on port:" + port)
-	log.Fatal(http.ListenAndServe(":"+port, nil))
-}
+	c1 := Customer{
+		//CustId:    time.Now().Format("20060102150405"),
+		CustId:    0,
+		FirstName: "kishore",
+		LastName:  "ch",
+		Email:     "kishore@gmail.com",
+		Age:       25,
+		Address: Address{
+			Hno:    12,
+			Street: "lb nagar",
+			State:  "Telangna"},
+		CreatedbyAgentID: "SM01",
+	}
 
-func hello(w http.ResponseWriter, r *http.Request) {
-	io.WriteString(w, "Hello world")
+	Customers = append(Customers, c1)
+
+	Agents = append(Agents, SalesAgent01)
+	Agents = append(Agents, SalesAgent02)
+
+	AllCustomers = initlizeMongoConnection()
+	initlizeRouter()
+
 }
