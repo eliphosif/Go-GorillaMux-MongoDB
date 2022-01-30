@@ -176,6 +176,7 @@ func updateCustomers(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(Customers)
 }
 
+//delete one customer
 func deleteCustomers(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if !isLoggedin(r) {
@@ -190,6 +191,27 @@ func deleteCustomers(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 	}
+	json.NewEncoder(w).Encode(Customers)
+}
+
+//delete all customer
+func deleteAllCustomers(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	if !isLoggedin(r) {
+		json.NewEncoder(w).Encode(userLoginError)
+		return
+	}
+
+	// BSON filter for all documents with a value of 1
+	f := bson.M{}
+	fmt.Println("nDeleting documents with filter:", f)
+
+	// Call the DeleteMany() method to delete docs matching filter
+	result, err := AllCustomers.DeleteMany(ctx, bson.M{})
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("DeleteMany removed %v document(s)\n", result.DeletedCount)
 	json.NewEncoder(w).Encode(Customers)
 }
 
@@ -306,6 +328,7 @@ func initlizeRouter() {
 	r.HandleFunc("/api/customers", createCustomer).Methods("POST")
 	r.HandleFunc("/api/customer/{id}", updateCustomers).Methods("PUT")
 	r.HandleFunc("/api/customer/{id}", deleteCustomers).Methods("DELETE")
+	r.HandleFunc("/api/customers", deleteAllCustomers).Methods("DELETE")
 
 	fmt.Println("server is listening:", port)
 	log.Fatal(http.ListenAndServe(":"+port, r))
