@@ -177,7 +177,7 @@ func updateCustomers(w http.ResponseWriter, r *http.Request) {
 }
 
 //delete one customer
-func deleteCustomers(w http.ResponseWriter, r *http.Request) {
+func deleteOneCustomer(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if !isLoggedin(r) {
 		json.NewEncoder(w).Encode(userLoginError)
@@ -325,7 +325,7 @@ func initlizeRouter() {
 	r.HandleFunc("/api/customer/{id}", getCustomer).Methods("GET")
 	r.HandleFunc("/api/customers", createCustomer).Methods("POST")
 	r.HandleFunc("/api/customer/{id}", updateCustomers).Methods("PUT")
-	r.HandleFunc("/api/customer/{id}", deleteCustomers).Methods("DELETE")
+	r.HandleFunc("/api/customer/{id}", deleteOneCustomer).Methods("DELETE")
 	r.HandleFunc("/api/customers", deleteAllCustomers).Methods("DELETE")
 
 	fmt.Println("server is listening:", port)
