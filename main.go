@@ -224,8 +224,8 @@ func deleteOneCustomer(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("DeleteOne removed %v document(s)\n", result.DeletedCount)
 	if result.DeletedCount == 0 {
 		w.WriteHeader(http.StatusNoContent)
-		mes := "pls check the ID passed"
-		json.NewEncoder(w).Encode(`{"message":` + mes + `}`)
+		msg := "pls check the ID passed"
+		io.WriteString(w, msg)
 	} else {
 		w.WriteHeader(http.StatusAccepted)
 		json.NewEncoder(w).Encode(result)
