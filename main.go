@@ -17,7 +17,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-
 )
 
 type UserLogin struct {
@@ -143,17 +142,19 @@ func getCustomer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	params := mux.Vars(r) // params
-	id, _ := strconv.ParseInt(params["id"], 10, 64)
-	for _, cust := range Customers {
-		if cust.CustId == id {
-			json.NewEncoder(w).Encode(cust)
-			return
-		}
+
+	idPrimitive, err := primitive.ObjectIDFromHex(params["id"])
+	if err != nil {
+		log.Fatal("primitive.ObjectIDFromHex ERROR:", err)
+	}
+	finderr := AllCustomers.FindOne(ctx, bson.M{"_id": idPrimitive}).Decode(&Customer{})
+	if finderr != nil {
+		log.Fatal(finderr)
 	}
 	json.NewEncoder(w).Encode(&Customer{})
 }
 
-func updateCustomers(w http.ResponseWriter, r *http.Request) {
+func updateCustomer(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if !isLoggedin(r) {
 		json.NewEncoder(w).Encode(userLoginError)
@@ -331,7 +332,7 @@ func initlizeRouter() {
 	r.HandleFunc("/api/customers", getCustomers).Methods("GET")
 	r.HandleFunc("/api/customer/{id}", getCustomer).Methods("GET")
 	r.HandleFunc("/api/customers", createCustomer).Methods("POST")
-	r.HandleFunc("/api/customer/{id}", updateCustomers).Methods("PUT")
+	r.HandleFunc("/api/customer/{id}", updateCustomer).Methods("PUT")
 	r.HandleFunc("/api/customer/{id}", deleteOneCustomer).Methods("DELETE")
 	r.HandleFunc("/api/customers", deleteAllCustomers).Methods("DELETE")
 
@@ -348,7 +349,7 @@ func Welcome(w http.ResponseWriter, r *http.Request) {
 	("/api/customers", getCustomers).Methods("GET")
 	("/api/customer/{id}", getCustomer).Methods("GET")
 	("/api/customers", createCustomer).Methods("POST")
-	("/api/customer/{id}", updateCustomers).Methods("PUT")
+	("/api/customer/{id}", updateCustomer).Methods("PUT")
 	("/api/customer/{id}", deleteOneCustomer).Methods("DELETE")
 	("/api/customers", deleteAllCustomers).Methods("DELETE")
 	
