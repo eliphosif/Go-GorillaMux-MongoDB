@@ -210,6 +210,11 @@ func deleteOneCustomer(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 	fmt.Printf("DeleteOne removed %v document(s)\n", result.DeletedCount)
+	if result.DeletedCount == 0 {
+		w.WriteHeader(http.StatusNoContent)
+	} else {
+		w.WriteHeader(http.StatusAccepted)
+	}
 	json.NewEncoder(w).Encode(result)
 }
 
@@ -232,6 +237,11 @@ func deleteAllCustomers(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 	fmt.Printf("DeleteMany removed %v document(s)\n", result.DeletedCount)
+	if result.DeletedCount == 0 {
+		w.WriteHeader(http.StatusNoContent)
+	} else {
+		w.WriteHeader(http.StatusAccepted)
+	}
 	json.NewEncoder(w).Encode(result)
 }
 
