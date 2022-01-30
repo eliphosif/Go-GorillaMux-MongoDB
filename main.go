@@ -403,8 +403,8 @@ func Welcome(w http.ResponseWriter, r *http.Request) {
 	for the routes you have to login first
 	use payload:
 	{
-		"userid": "SA01",
-		"password": "agent01"
+		"userid": "SA01", || "SA01",  
+		"password": "agent01" || "agent02"  
 	}
     you will get a JWT token as a response which is valid for 15 mins,
 	add the "jwt" in the request header as key and use the token as value for all the routes
