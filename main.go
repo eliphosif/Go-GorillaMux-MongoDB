@@ -145,6 +145,7 @@ func getCustomer(w http.ResponseWriter, r *http.Request) {
 
 	idPrimitive, err := primitive.ObjectIDFromHex(params["id"])
 	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		log.Fatal("primitive.ObjectIDFromHex ERROR:", err)
 	}
 	cursor, finderr := AllCustomers.Find(ctx, bson.M{"_id": idPrimitive})
@@ -201,6 +202,7 @@ func deleteOneCustomer(w http.ResponseWriter, r *http.Request) {
 
 	idPrimitive, err := primitive.ObjectIDFromHex(params["id"])
 	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		log.Fatal("primitive.ObjectIDFromHex ERROR:", err)
 	}
 	result, err := AllCustomers.DeleteOne(ctx, bson.M{"_id": idPrimitive})
@@ -214,6 +216,7 @@ func deleteOneCustomer(w http.ResponseWriter, r *http.Request) {
 //delete all customer
 func deleteAllCustomers(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	if !isLoggedin(r) {
 		json.NewEncoder(w).Encode(userLoginError)
 		return
@@ -235,6 +238,7 @@ func deleteAllCustomers(w http.ResponseWriter, r *http.Request) {
 //createCustomer
 func createCustomer(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
 	if !isLoggedin(r) {
 		json.NewEncoder(w).Encode(userLoginError)
 		return
