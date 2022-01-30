@@ -190,6 +190,9 @@ func updateCustomer(w http.ResponseWriter, r *http.Request) {
 		{"lastname", cust.LastName},
 		{"age", cust.Age},
 		{"email", cust.Email},
+		{"address.hno", cust.Address.Hno},
+		{"address.state", cust.Address.State},
+		{"address.street", cust.Address.Street},
 	}}}
 	result, err := AllCustomers.UpdateOne(ctx, bson.M{"_id": idPrimitive}, update, opts)
 	if err != nil {
