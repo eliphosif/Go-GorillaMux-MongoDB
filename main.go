@@ -184,13 +184,11 @@ func deleteCustomers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	params := mux.Vars(r) // params
-	id, _ := strconv.ParseInt(params["id"], 10, 64)
-	for index, cust := range Customers {
-		if cust.CustId == id {
-			Customers = append(Customers[:index], Customers[index+1:]...)
-			break
-		}
+	result, err := AllCustomers.DeleteOne(ctx, bson.M{"_id": params["id"]})
+	if err != nil {
+		log.Fatal(err)
 	}
+	fmt.Printf("DeleteOne removed %v document(s)\n", result.DeletedCount)
 	json.NewEncoder(w).Encode(Customers)
 }
 
