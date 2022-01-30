@@ -28,4 +28,4 @@ Welcome to my app built using GOLang + GorillaMux + MongoDB and deployed to Hero
 	Thankyou :)
 
 
-app server : https://myfirsrt-app01.herokuapp.com/
+app server : https://go-gorillamux-mongodb-myapp01.herokuapp.com/
