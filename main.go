@@ -342,8 +342,7 @@ func initlizeRouter() {
 func Welcome(w http.ResponseWriter, r *http.Request) {
 	msg := `Welcome to my app deployed on Heroku	
 	below are the routes : 
-	
-	("/welcome", Welcome).Methods("GET")
+	 
 	("/api/login", agentLogin).Methods("GET")
 	("/api/customers", getCustomers).Methods("GET")
 	("/api/customer/{id}", getCustomer).Methods("GET")
