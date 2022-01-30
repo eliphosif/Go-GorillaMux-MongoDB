@@ -126,7 +126,7 @@ func getCustomers(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	if !isLoggedin(r) {
-		w.WriteHeader(401)
+		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode(userLoginError)
 		return
 	}
@@ -195,6 +195,8 @@ func updateCustomer(w http.ResponseWriter, r *http.Request) {
 func deleteOneCustomer(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if !isLoggedin(r) {
+
+		w.WriteHeader(http.StatusNoContent)
 		json.NewEncoder(w).Encode(userLoginError)
 		return
 	}
