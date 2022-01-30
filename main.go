@@ -185,13 +185,12 @@ func updateCustomer(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewDecoder(r.Body).Decode(&cust)
 
 	opts := options.Update().SetUpsert(true)
-	update := bson.D{{"$set", bson.D{{"firstname", cust.FirstName}}}}
-	/* 	update := bson.M{{"$set", bson.D{
-		{"firstname", cust.FirstName}/*
-		{"lastname", cust.FirstName},
-		{"age", cust.FirstName},
-		{"email", cust.FirstName},
-	}}} */
+	update := bson.D{{"$set", bson.D{
+		{"firstname", cust.FirstName},
+		{"lastname", cust.LastName},
+		{"age", cust.Age},
+		{"email", cust.Email},
+	}}}
 	result, err := AllCustomers.UpdateOne(ctx, bson.M{"_id": idPrimitive}, update, opts)
 	if err != nil {
 		log.Fatal(err)
