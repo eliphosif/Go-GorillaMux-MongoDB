@@ -14,6 +14,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -184,7 +185,12 @@ func deleteOneCustomer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	params := mux.Vars(r) // params
-	result, err := AllCustomers.DeleteOne(ctx, bson.M{"_id": params["id"]})
+
+	idPrimitive, err := primitive.ObjectIDFromHex(params["id"])
+	if err != nil {
+		log.Fatal("primitive.ObjectIDFromHex ERROR:", err)
+	}
+	result, err := AllCustomers.DeleteOne(ctx, bson.M{"_id": idPrimitive})
 	if err != nil {
 		log.Fatal(err)
 	}
