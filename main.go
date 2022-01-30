@@ -325,7 +325,7 @@ func initlizeRouter() {
 
 	r := mux.NewRouter()
 
-	r.HandleFunc("/welcome", Welcome).Methods("GET")
+	r.HandleFunc("/", Welcome).Methods("GET")
 	r.HandleFunc("/api/login", agentLogin).Methods("GET")
 	r.HandleFunc("/api/customers", getCustomers).Methods("GET")
 	r.HandleFunc("/api/customer/{id}", getCustomer).Methods("GET")
@@ -340,7 +340,19 @@ func initlizeRouter() {
 }
 
 func Welcome(w http.ResponseWriter, r *http.Request) {
-	io.WriteString(w, "Welcome to my app deployed on Heroku")
+	msg := `Welcome to my app deployed on Heroku	
+	below are the routes : 
+	
+	("/welcome", Welcome).Methods("GET")
+	("/api/login", agentLogin).Methods("GET")
+	("/api/customers", getCustomers).Methods("GET")
+	("/api/customer/{id}", getCustomer).Methods("GET")
+	("/api/customers", createCustomer).Methods("POST")
+	("/api/customer/{id}", updateCustomers).Methods("PUT")
+	("/api/customer/{id}", deleteOneCustomer).Methods("DELETE")
+	("/api/customers", deleteAllCustomers).Methods("DELETE")`
+
+	io.WriteString(w, msg)
 }
 
 type SalesAgent struct {
