@@ -8,7 +8,7 @@ import (
 )
 
 func Welcome(w http.ResponseWriter, r *http.Request) {
-	io.WriteString(w, "Welcome World")
+	io.WriteString(w, "Welcome to my app deployed on Heroku")
 }
 
 func main() {
