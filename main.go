@@ -8,7 +8,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -176,21 +175,28 @@ func updateCustomer(w http.ResponseWriter, r *http.Request) {
 	}
 	params := mux.Vars(r) // params
 
-	id, _ := strconv.ParseInt(params["id"], 10, 64)
-	for index, item := range Customers {
-		if item.CustId == id {
-			Customers = append(Customers[:index], Customers[index+1:]...)
-			var cust Customer
-			_ = json.NewDecoder(r.Body).Decode(&cust)
-			cust.CustId = id
-			cust.ModifiedbyAgentID = loggedinAgent
-			Customers = append(Customers, cust)
-
-			json.NewEncoder(w).Encode(cust)
-			return
-		}
+	idPrimitive, err := primitive.ObjectIDFromHex(params["id"])
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Fatal("primitive.ObjectIDFromHex ERROR:", err)
 	}
-	json.NewEncoder(w).Encode(Customers)
+
+	var cust Customer
+	_ = json.NewDecoder(r.Body).Decode(&cust)
+
+	opts := options.Update().SetUpsert(true)
+	update := bson.D{{"$set", bson.D{{"firstname", cust.FirstName}}}}
+	/* 	update := bson.M{{"$set", bson.D{
+		{"firstname", cust.FirstName}/*
+		{"lastname", cust.FirstName},
+		{"age", cust.FirstName},
+		{"email", cust.FirstName},
+	}}} */
+	result, err := AllCustomers.UpdateOne(ctx, bson.M{"_id": idPrimitive}, update, opts)
+	if err != nil {
+		log.Fatal(err)
+	}
+	json.NewEncoder(w).Encode(result)
 }
 
 //delete one customer
@@ -389,7 +395,8 @@ func Welcome(w http.ResponseWriter, r *http.Request) {
 		"userid": "SA01",
 		"password": "agent01"
 	}
-    you will get a JWT token as a response which is valid for 15 mins, use the token for all the other routes
+    you will get a JWT token as a response which is valid for 15 mins,
+	add the "jwt" in the request header as key and use the token as value for all the routes
 	note: you will NOT be redirected to login
 	Thankyou :)
 	`
