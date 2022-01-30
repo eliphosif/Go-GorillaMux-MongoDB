@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/gorilla/mux"
+
 )
 
 func Welcome(w http.ResponseWriter, r *http.Request) {
@@ -15,6 +16,9 @@ func Welcome(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	port := os.Getenv("PORT")
+	if port == "" {
+		port = "9000" // Default port if not specified
+	}
 
 	r := mux.NewRouter()
 	r.HandleFunc("/", Welcome)
