@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/gorilla/mux"
 )
 
 func Welcome(w http.ResponseWriter, r *http.Request) {
@@ -13,7 +15,10 @@ func Welcome(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	port := os.Getenv("PORT")
-	http.HandleFunc("/", Welcome)
+
+	r := mux.NewRouter()
+	r.HandleFunc("/", Welcome)
+
 	log.Print("Listening on :" + port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
