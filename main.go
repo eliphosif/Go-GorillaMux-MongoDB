@@ -229,7 +229,7 @@ func deleteAllCustomers(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 	fmt.Printf("DeleteMany removed %v document(s)\n", result.DeletedCount)
-	json.NewEncoder(w).Encode(Customers)
+	json.NewEncoder(w).Encode(result)
 }
 
 //createCustomer
