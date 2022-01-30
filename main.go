@@ -17,6 +17,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+
 )
 
 type UserLogin struct {
@@ -349,7 +350,18 @@ func Welcome(w http.ResponseWriter, r *http.Request) {
 	("/api/customers", createCustomer).Methods("POST")
 	("/api/customer/{id}", updateCustomers).Methods("PUT")
 	("/api/customer/{id}", deleteOneCustomer).Methods("DELETE")
-	("/api/customers", deleteAllCustomers).Methods("DELETE")`
+	("/api/customers", deleteAllCustomers).Methods("DELETE")
+	
+	for the routes you have to login first
+	use payload:
+	{
+		"userid": "SA01",
+		"password": "agent01"
+	}
+    you will get a JWT token as a response which is valid for 15 mins, use the token for all the other routes
+	note: you will NOT be redirected to login
+	Thankyou :)
+	`
 
 	io.WriteString(w, msg)
 }
