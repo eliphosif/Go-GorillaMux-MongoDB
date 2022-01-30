@@ -12,6 +12,7 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -291,7 +292,15 @@ var ctx = context.Background()
 
 func initlizeMongoConnection() *mongo.Collection {
 
-	MongoDBURI := "mongodb+srv://eliphosif:eliphosif@cluster0.0imgv.mongodb.net/test?authSource=admin&replicaSet=atlas-fydu9m-shard-0&readPreference=primary&appname=MongoDB%20Compass&ssl=true"
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	USERNAME := os.Getenv("USERNAME")
+	PASSWORD := os.Getenv("PASSWORD")
+
+	MongoDBURI := "mongodb+srv://" + USERNAME + ":" + PASSWORD + "@cluster0.0imgv.mongodb.net/test?authSource=admin&replicaSet=atlas-fydu9m-shard-0&readPreference=primary&appname=MongoDB%20Compass&ssl=true"
 
 	//defer cancel()
 	client, _ := mongo.Connect(ctx, options.Client().ApplyURI(MongoDBURI))
