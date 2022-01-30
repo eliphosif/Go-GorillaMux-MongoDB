@@ -12,19 +12,17 @@ Welcome to my app deployed on Heroku
 	("/api/customers", deleteAllCustomers).Methods("DELETE")
 	
 	for the routes you have to login first
-	use payload:  
-  ----------------------------------------------------
+	use payload:   
 	{
 		"userid": "SA01",   
 		"password": "agent01"    
-	}
-  or  
-  {
+	} 
+	or  
+    {
 		"userid": "SA01",  
 		"password": "agent02"  
-	}  
-  ----------------------------------------------------
-  you will get a JWT token as a response which is valid for 15 mins,
+	}   
+	you will get a JWT token as a response which is valid for 15 mins,
 	add the "jwt" in the request header as key and use the token as value for all the routes
 	note: you will NOT be redirected to login
 	Thankyou :)
