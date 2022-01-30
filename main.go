@@ -167,7 +167,7 @@ func getCustomer(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(custSlice)
 }
 
-func updateCustomer(w http.ResponseWriter, r *http.Request) {
+func updateOneCustomer(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if !isLoggedin(r) {
 		w.WriteHeader(http.StatusUnauthorized)
@@ -379,7 +379,7 @@ func initlizeRouter() {
 	r.HandleFunc("/api/customers", getCustomers).Methods("GET")
 	r.HandleFunc("/api/customer/{id}", getCustomer).Methods("GET")
 	r.HandleFunc("/api/customers", createCustomer).Methods("POST")
-	r.HandleFunc("/api/customer/{id}", updateCustomer).Methods("PUT")
+	r.HandleFunc("/api/customer/{id}", updateOneCustomer).Methods("PUT")
 	r.HandleFunc("/api/customer/{id}", deleteOneCustomer).Methods("DELETE")
 	r.HandleFunc("/api/customers", deleteAllCustomers).Methods("DELETE")
 
@@ -396,7 +396,7 @@ func Welcome(w http.ResponseWriter, r *http.Request) {
 	("/api/customers", getCustomers).Methods("GET")
 	("/api/customer/{id}", getCustomer).Methods("GET")
 	("/api/customers", createCustomer).Methods("POST")
-	("/api/customer/{id}", updateCustomer).Methods("PUT")
+	("/api/customer/{id}", updateOneCustomer).Methods("PUT")
 	("/api/customer/{id}", deleteOneCustomer).Methods("DELETE")
 	("/api/customers", deleteAllCustomers).Methods("DELETE")
 	
