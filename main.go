@@ -1,16 +1,293 @@
 package main
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
+	"strconv"
+	"time"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+type UserLogin struct {
+	UserID   string `json:"userid"`
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Jwt      string `json:"jwt"`
+}
+
+type UserLoginError struct {
+	Message     string `json:"message"`
+	Description string `json:"description"`
+}
+
+var userLogin UserLogin
+var userLoginError UserLoginError = UserLoginError{
+	Message:     "unauthorized",
+	Description: "it seems you're not logged in, Please login ang try again ! :)",
+}
+
+func isLoggedin(r *http.Request) bool {
+	if jwt := r.Header.Get("jwt"); jwt == userLogin.Jwt && jwt != "" {
+		return true
+	}
+	return false
+}
+
+func CreateToken(userid string) (string, error) {
+	var err error
+	//Creating Access Token
+	os.Setenv("ACCESS_SECRET", "KishoreJWT")
+	atClaims := jwt.MapClaims{}
+	atClaims["authorized"] = true
+	atClaims["user_id"] = userid
+	atClaims["exp"] = time.Now().Add(time.Minute * 15).Unix()
+	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
+	token, err := at.SignedString([]byte(os.Getenv("ACCESS_SECRET")))
+	if err != nil {
+		return "", err
+	}
+	userLogin.Jwt = token
+	return token, nil
+}
+
+func agentLogin(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewDecoder(r.Body).Decode(&userLogin)
+	var count int = 0
+	for _, agent := range Agents {
+		if userLogin.UserID == agent.AgentID {
+			count = count + 1
+			if userLogin.Password == agent.AgentPassword {
+				userLogin.Username = agent.AgentName
+				loggedinAgent = agent.AgentID
+			} else {
+
+				fmt.Fprintf(w, "Please provide valid login details")
+				return
+			}
+		}
+	}
+	if count == 0 {
+		fmt.Fprintf(w, "the Agent does not exist")
+		return
+	}
+
+	//	userLogin.UserID = string(time.Now().Format("20060102150405"))
+	token, err := CreateToken(userLogin.UserID)
+	if err != nil {
+		fmt.Fprintln(w, err.Error())
+		return
+	}
+	userLogin.Jwt = token
+	json.NewEncoder(w).Encode(userLogin)
+}
+
+type Counter struct {
+	count int64
+}
+
+func (i *Counter) increment() int64 {
+	i.count = i.count + 1
+	return i.count
+}
+
+var counter Counter = Counter{0}
+
+type Address struct {
+	Hno    int    `json:"hno"`
+	Street string `json:"street"`
+	State  string `json:"state"`
+}
+
+type Customer struct {
+	//	gorm.Model
+	CustId            int64   `json:"custid"`
+	FirstName         string  `json:"firstname"`
+	LastName          string  `json:"lastname"`
+	Email             string  `json:"email"`
+	Age               int     `json:"age"`
+	Address           Address `json:"address"`
+	CreatedbyAgentID  string  `json:"createdbyagentid"`
+	ModifiedbyAgentID string  `json:"modifiedbyagentid"`
+}
+
+func getCustomers(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Set("Content-Type", "application/json")
+	if !isLoggedin(r) {
+		w.WriteHeader(401)
+		json.NewEncoder(w).Encode(userLoginError)
+		return
+	}
+	custsfromDB := getAllDocuments()
+
+	json.NewEncoder(w).Encode(custsfromDB)
+}
+
+func getCustomer(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	if !isLoggedin(r) {
+		json.NewEncoder(w).Encode(userLoginError)
+		return
+	}
+	params := mux.Vars(r) // params
+	id, _ := strconv.ParseInt(params["id"], 10, 64)
+	for _, cust := range Customers {
+		if cust.CustId == id {
+			json.NewEncoder(w).Encode(cust)
+			return
+		}
+	}
+	json.NewEncoder(w).Encode(&Customer{})
+}
+
+func updateCustomers(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	if !isLoggedin(r) {
+		json.NewEncoder(w).Encode(userLoginError)
+		return
+	}
+	params := mux.Vars(r) // params
+
+	id, _ := strconv.ParseInt(params["id"], 10, 64)
+	for index, item := range Customers {
+		if item.CustId == id {
+			Customers = append(Customers[:index], Customers[index+1:]...)
+			var cust Customer
+			_ = json.NewDecoder(r.Body).Decode(&cust)
+			cust.CustId = id
+			cust.ModifiedbyAgentID = loggedinAgent
+			Customers = append(Customers, cust)
+
+			json.NewEncoder(w).Encode(cust)
+			return
+		}
+	}
+	json.NewEncoder(w).Encode(Customers)
+}
+
+func deleteCustomers(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	if !isLoggedin(r) {
+		json.NewEncoder(w).Encode(userLoginError)
+		return
+	}
+	params := mux.Vars(r) // params
+	id, _ := strconv.ParseInt(params["id"], 10, 64)
+	for index, cust := range Customers {
+		if cust.CustId == id {
+			Customers = append(Customers[:index], Customers[index+1:]...)
+			break
+		}
+	}
+	json.NewEncoder(w).Encode(Customers)
+}
+
+//createCustomer
+func createCustomer(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	if !isLoggedin(r) {
+		json.NewEncoder(w).Encode(userLoginError)
+		return
+	}
+	var cust Customer
+	_ = json.NewDecoder(r.Body).Decode(&cust)
+	cust.CreatedbyAgentID = loggedinAgent
+	cust.CustId = counter.increment()
+	//Customers = append(Customers, cust)
+
+	res, err := insertCustomerDoc(AllCustomers, cust, ctx)
+	if err != nil {
+		return
+	}
+	fmt.Println(res)
+	w.WriteHeader(http.StatusCreated)
+
+	json.NewEncoder(w).Encode(cust)
+}
+
+var Customers []Customer
+var Agents []SalesAgent
+
+var loggedinAgent string
+var AllCustomers *mongo.Collection
+var ctx = context.Background()
+
+func initlizeMongoConnection() *mongo.Collection {
+
+	MongoDBURI := "mongodb+srv://eliphosif:eliphosif@cluster0.0imgv.mongodb.net/test?authSource=admin&replicaSet=atlas-fydu9m-shard-0&readPreference=primary&appname=MongoDB%20Compass&ssl=true"
+
+	//defer cancel()
+	client, _ := mongo.Connect(ctx, options.Client().ApplyURI(MongoDBURI))
+
+	golangMongoDB := client.Database("GolangMongo")
+	AllCustomers := golangMongoDB.Collection("AllCustomers")
+	return AllCustomers
+
+}
+
+func insertCustomerDoc(AllCustomers *mongo.Collection, cust Customer, ctx context.Context) (*mongo.InsertOneResult, error) {
+	//insert document in to MongoDB collection
+	res, err := AllCustomers.InsertOne(ctx, cust)
+	if err != nil {
+		log.Fatal(err)
+		return nil, err
+	}
+	fmt.Println(res)
+	return res, nil
+}
+
+func getAllDocuments() []bson.M {
+
+	cursor, err := AllCustomers.Find(ctx, bson.M{})
+	if err != nil {
+		log.Fatal(err)
+	}
+	var custSlice []bson.M
+	defer cursor.Close(ctx)
+	for cursor.Next(ctx) {
+		var custfromDB bson.M
+		if err = cursor.Decode(&custfromDB); err != nil {
+			log.Fatal(err)
+		}
+		custSlice = append(custSlice, custfromDB)
+
+	}
+	return custSlice
+}
+
 func main() {
+
+	c1 := Customer{
+		//CustId:    time.Now().Format("20060102150405"),
+		CustId:    0,
+		FirstName: "kishore",
+		LastName:  "ch",
+		Email:     "kishore@gmail.com",
+		Age:       25,
+		Address: Address{
+			Hno:    12,
+			Street: "lb nagar",
+			State:  "Telangna"},
+		CreatedbyAgentID: "SM01",
+	}
+
+	Customers = append(Customers, c1)
+
+	Agents = append(Agents, SalesAgent01)
+	Agents = append(Agents, SalesAgent02)
+
+	AllCustomers = initlizeMongoConnection()
 	initlizeRouter()
 }
 
@@ -23,6 +300,12 @@ func initlizeRouter() {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/welcome", Welcome).Methods("GET")
+	r.HandleFunc("/api/login", agentLogin).Methods("GET")
+	r.HandleFunc("/api/customers", getCustomers).Methods("GET")
+	r.HandleFunc("/api/customer/{id}", getCustomer).Methods("GET")
+	r.HandleFunc("/api/customers", createCustomer).Methods("POST")
+	r.HandleFunc("/api/customer/{id}", updateCustomers).Methods("PUT")
+	r.HandleFunc("/api/customer/{id}", deleteCustomers).Methods("DELETE")
 
 	fmt.Println("server is listening:", port)
 	log.Fatal(http.ListenAndServe(":"+port, r))
@@ -31,4 +314,37 @@ func initlizeRouter() {
 
 func Welcome(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "Welcome to my app deployed on Heroku")
+}
+
+type SalesAgent struct {
+	AgentID       string `json:"agentid"`
+	AgentName     string `json:"agentname"`
+	AgentEmail    string `json:"agentemail"`
+	AgentPassword string `json:"agentpassword"`
+}
+
+type SalesManager struct {
+	ManagerID    string `json:"managerid"`
+	ManagerName  string `json:"managername"`
+	ManagerEmail string `json:"manageremail"`
+}
+
+var salesManager SalesManager = SalesManager{
+	ManagerID:    "SM01",
+	ManagerName:  "Shawn Mendy",
+	ManagerEmail: "shawnm@gmail.com",
+}
+
+var SalesAgent01 SalesAgent = SalesAgent{
+	AgentID:       "SA01",
+	AgentName:     "John Doe",
+	AgentEmail:    "johnDoe@example.com",
+	AgentPassword: "agent01",
+}
+
+var SalesAgent02 SalesAgent = SalesAgent{
+	AgentID:       "SA02",
+	AgentName:     "Jessica Jones",
+	AgentEmail:    "jessicajones@example.com",
+	AgentPassword: "agent02",
 }
