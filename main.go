@@ -147,11 +147,22 @@ func getCustomer(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal("primitive.ObjectIDFromHex ERROR:", err)
 	}
-	finderr := AllCustomers.FindOne(ctx, bson.M{"_id": idPrimitive}).Decode(&Customer{})
+	cursor, finderr := AllCustomers.Find(ctx, bson.M{"_id": idPrimitive})
 	if finderr != nil {
 		log.Fatal(finderr)
 	}
-	json.NewEncoder(w).Encode(&Customer{})
+
+	var custSlice []bson.M
+	defer cursor.Close(ctx)
+	for cursor.Next(ctx) {
+		var custfromDB bson.M
+		if err = cursor.Decode(&custfromDB); err != nil {
+			log.Fatal(err)
+		}
+		custSlice = append(custSlice, custfromDB)
+
+	}
+	json.NewEncoder(w).Encode(custSlice)
 }
 
 func updateCustomer(w http.ResponseWriter, r *http.Request) {
