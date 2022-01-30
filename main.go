@@ -184,7 +184,7 @@ func updateCustomer(w http.ResponseWriter, r *http.Request) {
 	var cust Customer
 	_ = json.NewDecoder(r.Body).Decode(&cust)
 
-	opts := options.Update().SetUpsert(true)
+	opts := options.Update().SetUpsert(false)
 	update := bson.D{{"$set", bson.D{
 		{"firstname", cust.FirstName},
 		{"lastname", cust.LastName},
