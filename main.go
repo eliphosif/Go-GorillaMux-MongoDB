@@ -29,6 +29,7 @@ type UserLogin struct {
 type UserLoginError struct {
 	Message     string `json:"message"`
 	Description string `json:"description"`
+	Route       string `json:"route"`
 }
 
 var userLogin UserLogin
