@@ -381,10 +381,10 @@ Welcome to my app built using GOLang + GorillaMux + MongoDB and deployed to Hero
 	 
 	("/api/login", agentLogin).Methods("GET")
 	("/api/customers", getCustomers).Methods("GET")
-	("/api/customer/{id}", getCustomer).Methods("GET")
+	("/api/customers/{id}", getCustomer).Methods("GET")
 	("/api/customers", createCustomer).Methods("POST")
-	("/api/customer/{id}", updateOneCustomer).Methods("PUT")
-	("/api/customer/{id}", deleteOneCustomer).Methods("DELETE")
+	("/api/customers/{id}", updateOneCustomer).Methods("PUT")
+	("/api/customers/{id}", deleteOneCustomer).Methods("DELETE")
 	("/api/customers", deleteAllCustomers).Methods("DELETE")
 	
 	for the routes you have to login first
