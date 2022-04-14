@@ -113,7 +113,7 @@ type Address struct {
 }
 
 type Customer struct {
-	//	gorm.Model
+	//	similar to gorm.Model
 	CustId            int64   `json:"custid"`
 	FirstName         string  `json:"firstname"`
 	LastName          string  `json:"lastname"`
