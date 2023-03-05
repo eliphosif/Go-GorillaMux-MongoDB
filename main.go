@@ -34,6 +34,7 @@ type UserLoginError struct {
 	Route       string `json:"route"`
 }
 
+//local
 var userLogin UserLogin
 var userLoginError UserLoginError = UserLoginError{
 	Message:     "unauthorized",
