@@ -27,6 +27,7 @@ type UserLogin struct {
 	Jwt      string `json:"jwt"`
 }
 
+//user login
 type UserLoginError struct {
 	Message     string `json:"message"`
 	Description string `json:"description"`
