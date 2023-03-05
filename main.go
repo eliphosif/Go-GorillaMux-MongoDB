@@ -18,16 +18,14 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
-
-//login
+ 
 type UserLogin struct {
 	UserID   string `json:"userid"`
 	Username string `json:"username"`
 	Password string `json:"password"`
 	Jwt      string `json:"jwt"`
 }
-
-//user login
+ 
 type UserLoginError struct {
 	Message     string `json:"message"`
 	Description string `json:"description"`
