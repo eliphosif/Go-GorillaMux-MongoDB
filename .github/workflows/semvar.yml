@@ -11,6 +11,7 @@ jobs:
     steps:
       - uses: paulhatch/semantic-version@v5.0.2
         with:
+          fetch-depth: 0
           # The prefix to use to identify tags
           tag_prefix: "v"
           # A string which, if present in a git commit, indicates that a change represents a
