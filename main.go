@@ -18,8 +18,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
-//major
- 
+//(MAJOR)
 type UserLogin struct {
 	UserID   string `json:"userid"`
 	Username string `json:"username"`
