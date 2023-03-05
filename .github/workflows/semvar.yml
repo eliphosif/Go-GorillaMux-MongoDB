@@ -9,11 +9,7 @@ jobs:
   generateVersion:
     name: "Generate release"
     runs-on: ubuntu-20.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
+    steps: 
       - name: Generate version
         id: generate-version
         uses: paulhatch/semantic-version@v5.0.2
@@ -34,21 +30,8 @@ jobs:
           version_format: "${major}.${minor}.${patch}" 
           bump_each_commit: false
           # If true, the body of commits will also be searched for major/minor patterns to determine the version type.
-          search_commit_body: false
-          # The output method used to generate list of users, 'csv' or 'json'.
-          user_format_type: "csv"
-          # Prevents pre-v1.0.0 version from automatically incrementing the major version.
-          # If enabled, when the major version is 0, major releases will be treated as minor and minor as patch. Note that the version_type output is unchanged.
+          search_commit_body: false 
           enable_prerelease_mode: true
-      - name: Create tag and push
-        run: git tag ${{ steps.generate-version.outputs.version }} && git push --tags
-      - name: Generate release
-        uses: Roang-zero1/github-create-release-action@master
-        with:
-          created_tag: "${{ steps.generate-version.outputs.version_tag }}"
-        env:
-          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 
           
-
 
