@@ -42,4 +42,4 @@ jobs:
       - run: |
           echo $major
           echo $minor
-          echo $patch 
+          echo $patch
